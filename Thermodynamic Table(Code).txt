@@ -1,0 +1,101 @@
+/* Table display and State Determiner */
+/* Author: Abdulwahab,Abdulleah,ghassan */
+/* Date 5/10/2024 */
+
+#include <stdio.h>
+int main() {
+    /*Arrays for temperature, pressure, enthalpy of liquid, and enthalpy of */
+    double Temperature[] = {0.01, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100};
+    double Pressure[] = {0.6117, 0.8725, 1.2281, 1.7057, 2.3392, 3.1698, 4.2469, 5.6291, 7.3851, 9.56953, 12.352, 15.763, 19.947, 25.043, 31.202, 38.597, 47.416, 57.868, 70.183, 84.609, 101.42};
+    double hf[] = {0.001, 21.020, 42.022, 62.982, 83.915, 104.83, 125.74, 146.64, 167.53, 188.44, 209.34, 230.26, 251.18, 272.12, 293.07, 314.03, 335.02, 356.02, 377.04, 398.09, 419.17};
+    double hfg[] = {2500.9, 2489.1, 2477.2, 2465.4, 2453.5, 2441.7, 2429.8, 2417.9, 2406.0, 2394.0, 2382.0, 2369.8, 2357.7, 2345.4, 2333.0, 2320.6, 2308.0, 2295.3, 2282.5, 2269.6, 2256.4};
+double sf[] = { 0.0, 0.0763, 0.1511, 0.2245, 0.2965, 0.3672, 0.4368, 0.5051, 0.5724, 0.6386, 0.7038, 0.7680, 0.8313, 0.8937, 0.9551, 1.0158, 1.0756, 1.1346, 1.1929, 1.2504, 1.3072};
+double sfg[] = {9.1556, 8.9487, 8.7488, 8.5559, 8.3696, 8.1895, 8.0152, 7.8466, 7.6832, 7.5247, 7.3710, 7.2218, 7.0769, 6.9360, 6.7989, 6.6655, 6.5355, 6.4089, 6.2853, 6.1647, 6.0470 };
+double vf[] = {0.001000, 0.001000, 0.001000, 0.001001, 0.001002, 0.001003, 0.001004, 0.001006, 0.001008, 0.001010, 0.001012, 0.001015, 0.001017, 0.001020, 0.001023, 0.001026, 0.001029, 0.001032, 0.001036, 0.001040, 0.001043};
+    double vfg[] = {205.999, 147.029, 106.319, 77.884, 57.761, 43.334, 32.88, 25.204, 19.514, 15.25, 12.025, 9.5629, 7.666, 6.192, 5.0329, 4.128, 3.4043, 2.825, 2.3583, 1.979, 1.671};
+    /* Variables for user input and choice*/
+    double Temp, Pres;
+    int choice;
+    
+    /* Loop for menu display and user interaction*/
+    do {
+        printf("\nEnter (1) or (2), T-P Table or exit: ");
+        scanf("%d", &choice);
+        
+        switch (choice) {
+            /* Case for displaying T-P Table*/
+            case 1:
+                printf("Temperature\tPressure\n");
+                for (int i = 0; i < 21; ++i) {
+                    printf("%.2f\t\t%.4f\n", Temperature[i], Pressure[i]);
+                }
+                
+                /* Ask user for values calculation*/
+                int entropyChoice;
+                printf("Enter 2 to find values of water: ");
+                scanf("%d", &entropyChoice);
+                
+                if (entropyChoice == 2) {
+                    /* Loop for values calculation*/
+                    do {
+                        printf("Enter the value of T and P: ");
+                        scanf("%lf %lf", &Temp, &Pres);
+                        int foundTemp = 0;
+                        int foundPres = 0;
+                        
+                        /* Check if the T and P values are in the table*/
+                        for (int i = 0; i < 21; i++) {
+                            if (Temp == Temperature[i] && Pres == Pressure[i]) {
+                                foundTemp = 1;
+                                foundPres = 1;
+                                double x;
+                                printf("It is Saturated, so enter the value of x (must be 0-1): ");
+                                scanf("%lf", &x);
+                                double h = hf[i] + x * hfg[i];
+                                double v = vf[i] + x * vfg[i];
+                                double s = sf[i] + x * sfg[i];
+                                printf("values for x = %.2f is:\n enthalpy = %.4f kj/kg\n specific volume =%.4f m^3/kg\n entropy = %.4f kj/kg*kmol \n ", x, h,v,s);
+                                break;
+                            }
+                        }
+                        
+                        /* If T and P values are not found in the table*/
+                        if (!foundTemp || !foundPres) {
+                            int compressed = 0;
+                            int superheated = 0;
+                            /* Check if the state is compressed or superheated*/
+                            for (int i = 0; i < 21; i++) {
+                                if ((Temp == Temperature[i] && Pres > Pressure[i]) ||
+                                    (Temp < Temperature[i] && Pres == Pressure[i])) {
+                                    compressed = 1;
+                                    printf("It is Compressed \n *Note that values can be determined using interpolation"); 
+                                }
+                                if ((Temp == Temperature[i] && Pres < Pressure[i]) ||
+                                    (Temp > Temperature[i] && Pres == Pressure[i])) {
+                                    superheated = 1;
+                                    printf("It is Superheated\n *Note that values can be determined using interpolation\n");
+                                }
+                            }
+                            if (!compressed && !superheated) {
+                                printf("Values not found in the table.\n"); 
+                            }
+                        }
+                        
+                        /* Ask user if they want to continue calculating values*/
+                        int continueEntropy;
+                        printf("Do you want to continue calculating values of water? (1 for yes, 0 for no): ");
+                        scanf("%d", &continueEntropy);
+                        if (continueEntropy == 0) {
+                            break;}
+                    } while (1); }
+                break;
+            case 2:
+                printf("Exiting program.\n");
+                return 0;
+            default:
+                printf("Invalid choice. Please enter 1 or 2.\n");
+                break;
+        }
+    } while (1);
+    return 0;
+}
